@@ -33,9 +33,10 @@ def main():
     #    这样一来，ProductView 发出的 search/product_clicked 信号
     #    就会被 ProductController 处理，Model <-> View 完成连接
     prod_ctrl = ProductController(Session, window.product_view)
-    pay_ctrl  = PaymentController(Session, window.payment_view, prod_ctrl)
+    mem_ctrl  = MemberController(Session, window.member_view)
+    pay_ctrl  = PaymentController(Session, window.payment_view, prod_ctrl,mem_ctrl)
     inv_ctrl  = InventoryController(Session, window.inventory_view, prod_ctrl)
-    mem_ctrl   = MemberController(Session, window.member_view)
+    
     report_ctrl = ReportController(Session, window.report_view)
     # 5) 启动
     window.show()

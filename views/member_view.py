@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout,
     QLabel, QLineEdit, QPushButton,
-    QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox
+    QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox,QInputDialog
 )
 from PySide6.QtCore import Signal
 
@@ -15,21 +15,28 @@ class MemberView(QWidget):
     # 信号：充值(会员ID, 金额)，积分兑换(会员ID, 积分)
     recharge_requested = Signal(int ,float)
     redeem_requested = Signal(int,int)
+    add_requested      = Signal(str)
+    
 
     def __init__(self):
         super().__init__()
         main_layout = QHBoxLayout(self)
 
         # 左边： 会员列表表格
+        left = QVBoxLayout()
+        btn_add = QPushButton('新增会员')
+        btn_add.clicked.connect(self._on_add_member_clicked)
+        left.addWidget(btn_add)
 
+        
         self.table = QTableWidget(0,5)
         self.table.setHorizontalHeaderLabels(['ID','姓名','余额','积分','等级'])
         
         # self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         # main_layout.addWidget(self.table, 3)
         
-        main_layout.addWidget(self.table,3)
-
+        left.addWidget(self.table,3)
+        main_layout.addLayout(left,3)
         # 右边 ： 操作面板
         ops = QVBoxLayout()
         ops.addWidget(QLabel('操作面板'))
@@ -120,4 +127,18 @@ class MemberView(QWidget):
             return
         self.redeem_requested.emit(member_id, pts)
 
+    
+    def _on_add_member_clicked(self):
+        """
+        弹出对话框输入新会员姓名，非空时发 add_requested 信号
+        """
+        name, ok = QInputDialog.getText(self, "新增会员", "请输入会员姓名：")
+        if not ok:
+            return
+        name = name.strip()
+        if not name:
+            QMessageBox.warning(self, "错误", "会员姓名不能为空")
+            return
+        # 发给 Controller 去写数据库
+        self.add_requested.emit(name)
         

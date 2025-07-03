@@ -16,10 +16,39 @@ class MemberController:
         # 绑定信号
         self.view.recharge_requested.connect(self.on_recharge)
         self.view.redeem_requested.connect(self.on_redeem)
-        
+        self.view.add_requested.connect(self.on_add_member)
         # 初始化加载会员列表
         self.load_members()
-        
+    
+    @Slot(str)
+    def on_add_member(self, name: str):
+        """
+        收到新增会员请求后：
+        1. 在数据库创建 Member(name=name, balance=0, points=0, level="普通会员")
+        2. 提交事务
+        3. 刷新列表
+        4. 弹窗提示新会员ID
+        """
+        session = self.SessionFactory()
+        try:
+            # 模型构造，默认余额/积分为 0，等级“普通会员”
+            m = Member(name=name, balance=0.0, points=0, level="普通会员")
+            session.add(m)
+            session.commit()
+            new_id = m.id
+        finally:
+            session.close()
+
+        # 刷新表格显示新会员
+        self.load_members()
+
+        # 提示
+        QMessageBox.information(
+            self.view,
+            "新增成功",
+            f"已添加新会员：{name}\n会员ID={new_id}"
+        )
+ 
     def load_members(self):
         """
         查询所有会员，调用 view.update_members()

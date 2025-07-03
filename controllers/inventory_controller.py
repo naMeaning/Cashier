@@ -101,24 +101,23 @@ class InventoryController:
         session = self.SessionFactory()
         try:
             prod = session.get(Product, pid)
-            if not prod:
-                QMessageBox.warning(self.view, "错误", f"商品 ID={pid} 不存在")
-                return
-            if qty > prod.stock:
-                QMessageBox.warning(
-                    self.view, "错误",
-                    f"“{prod.name}” 当前库存仅 {prod.stock} 件，无法减少 {qty} 件"
-                )
-                return
+            # … 校验 …
+            # 先把要显示的属性缓存下来
+            name = prod.name
+            new_stock = prod.stock - qty
+
+            # 修改库存并提交
             prod.change_stock(-qty)
             session.commit()
         finally:
             session.close()
 
+        # 刷新 UI
         self.load_inventory()
+        # 用本地缓存变量，不再访问已过期的 prod
         QMessageBox.information(
             self.view, "成功",
-            f"“{prod.name}” 减少库存 {qty} 件\n当前库存：{prod.stock} 件"
+            f"“{name}” 减少库存 {qty} 件\n当前库存：{new_stock} 件"
         )
     
     def check_stock(self):

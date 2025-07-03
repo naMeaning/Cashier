@@ -16,7 +16,8 @@ class PaymentView(QWidget):
      - 右侧选择支付方式、输入金额/扫码、确认付款并显示找零
     """
     # 当用户点击“确认付款”时，发出 (pay_type:str, amount:float)   
-    checkout_requested = Signal(str,float)
+    # checkout_requested = Signal(str,float)
+    checkout_requested = Signal(str, float, object)
     # 当需要清空购物车或移除某项时也可发信号（可选扩展）
     # clear_cart = Signal()
 
@@ -54,8 +55,14 @@ class PaymentView(QWidget):
         # 支付方式下拉
         right.addWidget(QLabel('支付方式'))
         self.method_box = QComboBox()
-        self.method_box.addItems(['现金','移动支付','积分'])
+        self.method_box.addItems(['现金','移动支付','积分','储值卡'])
         right.addWidget(self.method_box)
+        
+        # —— 会员选择下拉 —— 
+        right.addWidget(QLabel("选择会员"))
+        self.member_box = QComboBox()
+        self.member_box.addItem("非会员", None)   # data=None
+        right.addWidget(self.member_box)
 
         # 金额/扫码输入
         self.input_line = QLineEdit()
@@ -119,9 +126,21 @@ class PaymentView(QWidget):
         except ValueError:
             amt = 0.0
         
-        self.checkout_requested.emit(pay_type,amt)
+
+        member_id = self.member_box.currentData()
+        self.checkout_requested.emit(pay_type, amt, member_id)
     
-    
+    def init_members(self, members):
+        """
+        填充会员下拉列表
+        :param members: List of ORM Member 对象
+        """
+        self.member_box.clear()
+        self.member_box.addItem("非会员", None)
+        for m in members:
+            # 下拉项显示“姓名(ID)”；data 存 member.id
+            self.member_box.addItem(f"{m.name}（ID:{m.id}）", m.id)
+
     
         
         

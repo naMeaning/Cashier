@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import(
     QWidget,QVBoxLayout,QHBoxLayout,QLabel,
-    QSpinBox,QPushButton,QTableWidget,QTableWidgetItem,QListWidget,QMessageBox,
+    QSpinBox,QPushButton,QTableWidget,QTableWidgetItem,QListWidget,QMessageBox,QGroupBox,
+    QHeaderView
 )
 
 from PySide6.QtCore import Signal
@@ -14,63 +15,65 @@ class InventoryView(QWidget):
     decrease_requested   = Signal(int, int)
 
     def __init__(self):
+         # 整体留白和间距
         super().__init__()
-
-        # 整体垂直布局
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(16)
 
-        # 阈值设置区
-
-        hl = QHBoxLayout()
-        hl.addWidget(QLabel('库存预警阈值：'))
-
-        # SPinBox 用于选择阈值
-
+        # ——— 阈值设置区 ———
+        gb_thresh = QGroupBox("库存预警阈值")
+        thresh_layout = QHBoxLayout(gb_thresh)
+        thresh_layout.addWidget(QLabel("阈值："))
         self.spin_threshold = QSpinBox()
-        self.spin_threshold.setRange(1,1000)
-        self.spin_threshold.setValue(5) # 默认阈值
-        hl.addWidget(self.spin_threshold)
-
-        # 更新按钮
-        btn_upgrate = QPushButton('更新阈值')
-
-        # 点击发送信号，把当前阈值传出去
-
-        btn_upgrate.clicked.connect(
+        self.spin_threshold.setRange(1, 1000)
+        self.spin_threshold.setValue(5)
+        thresh_layout.addWidget(self.spin_threshold)
+        btn_update = QPushButton("更新")
+        btn_update.clicked.connect(
             lambda: self.threshold_changed.emit(self.spin_threshold.value())
         )
+        thresh_layout.addWidget(btn_update)
+        thresh_layout.addStretch()
+        main_layout.addWidget(gb_thresh)
 
-        hl.addWidget(btn_upgrate)
-        main_layout.addLayout(hl)
-
-        
-        # 库存列表
-        # 用QTableWidget显示每个商品的ID、名称、库存
+        # ——— 库存列表区 ———
+        gb_table = QGroupBox("库存列表")
+        table_layout = QVBoxLayout(gb_table)
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels(["商品ID", "名称", "库存"])
-        main_layout.addWidget(self.table, 3)  # 拉伸比例 3
-        
-         # —— 库存调整区 —— 
-        adj_layout = QHBoxLayout()
-        adj_layout.addWidget(QLabel("调整数量："))
+        # 样式优化
+        self.table.setAlternatingRowColors(True)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        hdr = self.table.horizontalHeader()
+        hdr.setSectionResizeMode(QHeaderView.Stretch)
+        table_layout.addWidget(self.table)
+        main_layout.addWidget(gb_table, stretch=3)
+
+        # ——— 库存调整区 ———
+        gb_adjust = QGroupBox("库存调整")
+        adj_layout = QHBoxLayout(gb_adjust)
+        adj_layout.addWidget(QLabel("数量："))
         self.adjust_spin = QSpinBox()
         self.adjust_spin.setRange(1, 1000)
         adj_layout.addWidget(self.adjust_spin)
-
-        btn_inc = QPushButton("增加库存")
+        btn_inc = QPushButton("增加")
         btn_inc.clicked.connect(self._on_increase_clicked)
         adj_layout.addWidget(btn_inc)
-
-        btn_dec = QPushButton("减少库存")
+        btn_dec = QPushButton("减少")
         btn_dec.clicked.connect(self._on_decrease_clicked)
         adj_layout.addWidget(btn_dec)
+        adj_layout.addStretch()
+        main_layout.addWidget(gb_adjust)
 
-        main_layout.addLayout(adj_layout)
-        
-        # —— 预警日志 —— 
-        main_layout.addWidget(QLabel("预警日志"))
+        # ——— 预警日志区 ———
+        gb_log = QGroupBox("预警日志")
+        log_layout = QVBoxLayout(gb_log)
         self.log_list = QListWidget()
-        main_layout.addWidget(self.log_list, 1)
+        self.log_list.setAlternatingRowColors(True)
+        log_layout.addWidget(self.log_list)
+        main_layout.addWidget(gb_log, stretch=1)
         
         
     def update_inventory(self, rows):
@@ -118,6 +121,6 @@ class InventoryView(QWidget):
             QMessageBox.warning(self,'错误','请先选择一条商品记录')
             return 
         qty = self.adjust_spin.value()
-        self.decrease_requested()
+        self.decrease_requested.emit(pid,qty)
     
     

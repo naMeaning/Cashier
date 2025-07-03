@@ -36,3 +36,7 @@ class Member(Base):
     def get_all(cls,session):
         return session.query(cls).order_by(cls.id).all()
 
+    def earn_points(self, pts: int):
+        """消费后赚取积分"""
+        self.points += pts
+
