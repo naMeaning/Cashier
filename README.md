@@ -35,3 +35,33 @@
 
 ## 项目结构
 
+cashier_system/
+├── controllers/ # MVC 控制器
+├── models/ # SQLAlchemy ORM 模型
+├── views/ # PySide6 界面定义
+├── resources/ # 静态资源 (images/ui)
+├── main.py # 程序入口
+├── seed_products.py # 生成测试数据脚本
+├── requirements.txt # 依赖列表
+└── README.md # 本文档
+
+---
+
+## 快速开始
+
+1. **克隆仓库**
+
+   ```bash
+   git clone git@github.com:你的用户名/CashierSystem.git
+   cd CashierSystem
+2.创建虚拟环境 & 安装依赖
+
+conda create -n cashier python=3.9
+conda activate cashier
+pip install -r requirements.txt
+
+3. 准备测试数据
+python seed_products.py
+
+运行程序
+python main.py
