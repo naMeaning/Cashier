@@ -29,6 +29,8 @@ def seed():
                 image=os.path.join("resources","images","bottle.png")),
         Product(name="婴儿奶瓶", price=15.0,  stock=20,
                 image=os.path.join("resources","images","baby_bottle.png")),
+        Product(name="蓝莓", price=20.0,  stock=30,
+                image=os.path.join("resources","images","blueberry.png")),
     ]
 
     # 4) 批量插入
